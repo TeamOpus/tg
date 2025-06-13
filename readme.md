@@ -177,6 +177,6 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## 📧 Contact
 
-Project Maintainer - [Your Name](mailto:your.email@example.com)
+Project Maintainer - [Your Name](https://t.me/Pranav-Saraswat)
 
-Project Link: [https://github.com/yourusername/music-bot](https://github.com/yourusername/music-bot)
+Project Link: [https://github.com/Pranav-Saraswat/music-bot](https://github.com/Pranav-Saraswat/music-bot)
