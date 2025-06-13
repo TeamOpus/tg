@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  musicbot:
+    build: .
+    container_name: music_bot
+    restart: unless-stopped
+    environment:
+      - API_ID=${API_ID}
+      - API_HASH=${API_HASH}
+      - DATABASE_URL=mongodb://mongodb:27017
+    volumes:
+      - ./downloads:/app/downloads
+      - ./logs:/app/logs
+      - ./temp:/app/temp
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo:5.0
+    container_name: music_bot_db
+    restart: unless-stopped
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${DB_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${DB_PASS}
+
+volumes:
+  mongodb_data:
+  

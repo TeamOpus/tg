@@ -1,0 +1,49 @@
+# Core Requirements
+pyrogram>=2.0.0
+pytgcalls>=3.0.0
+python-dotenv>=0.19.0
+
+# Media Handling
+yt-dlp>=2023.3.4
+ffmpeg-python>=0.2.0
+
+# Database
+motor>=3.0.0
+pymongo>=4.0.0
+dnspython>=2.0.0  # For MongoDB SRV connections
+
+# Services
+spotipy>=2.19.0
+google-api-python-client>=2.80.0
+google-auth-oauthlib>=0.4.6
+
+# Async Utilities
+aiohttp>=3.8.0
+aiodns>=3.0.0  # For async DNS resolution
+backoff>=2.2.0  # For exponential backoff
+
+# Data Processing
+pydantic>=1.9.0
+python-dateutil>=2.8.2
+
+# Caching
+cachetools>=5.0.0
+
+# Logging
+loguru>=0.6.0  # Alternative to standard logging
+sentry-sdk>=1.15.0  # For error tracking
+
+# Development Tools
+black>=22.10.0
+isort>=5.10.1
+mypy>=0.982
+pylint>=2.15.0
+pytest>=7.2.0
+pytest-asyncio>=0.20.0
+
+# Platform Specific
+uvloop>=0.17.0; sys_platform != 'win32'  # Faster event loop for Unix
+
+# Optional (for IP rotation)
+aiohttp-socks>=0.8.0  # For SOCKS proxy support
+
