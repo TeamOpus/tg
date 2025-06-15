@@ -177,6 +177,6 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## 📧 Contact
 
-Project Maintainer - [Pranav Saraswat](https://t.me/Pranav-Saraswat)
+Project Maintainer - [Pranav Saraswat](https://t.me/Pranav_Saraswat)
 
 Project Link: [https://github.com/Pranav-Saraswat/music-bot](https://github.com/Pranav-Saraswat/music-bot)
