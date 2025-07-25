@@ -1,3 +1,3 @@
-from .Decorators import *
-from .Downloader import *
+from .decorators import *
+from .downloader import *
 from .IPRotator import *
