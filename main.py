@@ -6,7 +6,6 @@ import sys
 from pyrogram import Client
 from pyrogram.enums import ParseMode
 from pytgcalls import PyTgCalls
-from config.config import settings
 from config.logging import setup_logging
 from handlers import (
     CommandHandler,
