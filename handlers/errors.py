@@ -10,7 +10,6 @@ from pyrogram.errors import (
     Unauthorized,
     Forbidden,
     NotAcceptable,
-    TimedOut,
     ChatAdminRequired,
     PeerIdInvalid,
     ChannelPrivate,
