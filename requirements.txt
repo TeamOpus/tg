@@ -1,6 +1,6 @@
 # Core Requirements
 pyrogram>=2.0.0
-pytgcalls>=3.0.0
+py-tgcalls>=3.0.0
 python-dotenv>=0.19.0
 
 # Media Handling
