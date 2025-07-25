@@ -23,13 +23,6 @@ import asyncio
 
 from utils.decorators import capture_errors, admin_only, rate_limit
 
-@capture_errors
-@admin_only
-@rate_limit()
-async def my_command(client: Client, message: Message):
-    await message.reply("✅ This command is working fine.")
-
-
 logger = logging.getLogger(__name__)
 
 class CommandHandler:
