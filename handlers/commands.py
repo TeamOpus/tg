@@ -15,16 +15,20 @@ from utils.helpers import (
     is_spotify_url,
     format_duration
 )
-from utils.decorators import Decorators
 
-@Decorators.capture_errors
-@Decorators.admin_only
-@Decorators.rate_limit()
-async def my_command(...):
 from handlers.callbacks import CallbackHandler
 import re
 import logging
 import asyncio
+
+from utils.decorators import capture_errors, admin_only, rate_limit
+
+@capture_errors
+@admin_only
+@rate_limit()
+async def my_command(client: Client, message: Message):
+    await message.reply("✅ This command is working fine.")
+
 
 logger = logging.getLogger(__name__)
 
