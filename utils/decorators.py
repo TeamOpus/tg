@@ -7,7 +7,7 @@ from pyrogram.types import Message, CallbackQuery
 from config.config import settings
 from database.models import User
 from utils.helpers import is_admin, mention_user
-from utils.errors import ErrorHandler
+from handlers.errors import ErrorHandler
 import inspect
 
 logger = logging.getLogger(__name__)
