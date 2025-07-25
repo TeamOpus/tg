@@ -19,7 +19,12 @@ class settings:
     MAX_CONCURRENT_DOWNLOADS = int(os.getenv("MAX_CONCURRENT_DOWNLOADS", 10))
     DEFAULT_VOLUME = int(os.getenv("DEFAULT_VOLUME", 80))
 
-    # Feature Flags
+  # Logging
+    LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()           # Default: INFO
+    LOG_FILE = os.getenv("LOG_FILE", "bot.log")                  # Optional log file name
+    SENTRY_DSN = os.getenv("SENTRY_DSN", None)                   # Optional Sentry DSN
+
+    # proxy rotator Flags
     IP_ROTATION_ENABLED = os.getenv("IP_ROTATION_ENABLED", "false").lower() == "true"
 
 settings = settings()
