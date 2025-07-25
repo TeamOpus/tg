@@ -29,5 +29,7 @@ class settings:
 
     # proxy rotator Flags
     IP_ROTATION_ENABLED = os.getenv("IP_ROTATION_ENABLED", "false").lower() == "true"
+    PROXY_FILE = os.getenv("PROXY_FILE", "proxies.txt")  # Default to proxies.txt if not set
+
 
 settings = settings()
