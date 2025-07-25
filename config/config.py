@@ -22,4 +22,4 @@ class settings:
     # Feature Flags
     IP_ROTATION_ENABLED = os.getenv("IP_ROTATION_ENABLED", "false").lower() == "true"
 
-settings = Settings()
+settings = settings()
