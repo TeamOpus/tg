@@ -9,7 +9,7 @@ import signal
 import sys
 from pyrogram import Client
 from pyrogram.enums import ParseMode
-from pytgcalls import PyTgCalls
+from pytgcalls import GroupCall
 
 from config.logging import setup_logging
 from config.config import settings
@@ -76,7 +76,7 @@ async def startup():
     )
     
     # Initialize PyTgCalls
-    pytgcalls = PyTgCalls(app)
+    pytgcalls = GroupCall(app)
     
     # Initialize services
     youtube_service = YouTubeService()
@@ -115,7 +115,7 @@ async def main():
         await app.start()
         await pytgcalls.start()
         
-        logger.info("Bot started successfully. Press Ctrl+C to stop.")
+        logger.info("Bot started successfully🚀🍃. Press Ctrl+C to stop.")
         
         # Keep the application running
         while not SHUTDOWN:
