@@ -59,7 +59,7 @@ async def startup():
     
     # Initialize database connection
     try:
-        await mongodb.client.admin.command('ping')
+        await mongodb.connect()
         logger.info("Connected to MongoDB")
     except Exception as e:
         logger.error(f"Failed to connect to MongoDB: {e}")
