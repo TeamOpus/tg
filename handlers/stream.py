@@ -1,6 +1,6 @@
+
 from pytgcalls import PyTgCalls
-from pytgcalls.types.group_call_factory import GroupCallFactory
-from pytgcalls.group_call_factory import GroupCallFileAction, GroupCallAction
+from pytgcalls.types import GroupCallAction, GroupCallFileAction
 from services.player import Player
 from services.queue import QueueService
 from utils.decorators import capture_errors
