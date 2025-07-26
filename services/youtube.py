@@ -26,10 +26,8 @@ class YouTubeService:
         self.retry_delay = 2
 
     async def _run_ydlp(self, params: dict) -> Optional[dict]:
-        """Execute yt-dlp command with retry logic"""
         for attempt in range(self.max_retries):
             try:
-                # Apply IP rotation if enabled
                 if settings.IP_ROTATION_ENABLED:
                     proxy = IPRotator.get_current_proxy()
                     if proxy:
@@ -38,7 +36,7 @@ class YouTubeService:
                 loop = asyncio.get_event_loop()
                 with YoutubeDL(params) as ydl:
                     result = await loop.run_in_executor(
-                        None, 
+                        None,
                         lambda: ydl.extract_info(params['url'], download=False)
                     )
                     return result
@@ -49,9 +47,7 @@ class YouTubeService:
                 await asyncio.sleep(self.retry_delay)
         return None
 
-    @staticmethod
-    def _extract_video_id(url: str) -> Optional[str]:
-        """Extract YouTube video ID from various URL formats"""
+    def _extract_video_id(self, url: str) -> Optional[str]:
         patterns = [
             r'(?:v=|\/)([0-9A-Za-z_-]{11}).*',
             r'youtu.be\/([0-9A-Za-z_-]{11})',
@@ -59,21 +55,17 @@ class YouTubeService:
             r'youtube.com\/embed\/([0-9A-Za-z_-]{11})',
             r'youtube.com\/live\/([0-9A-Za-z_-]{11})'
         ]
-        
         for pattern in patterns:
             match = re.search(pattern, url)
             if match:
                 return match.group(1)
         return None
 
-    @staticmethod
-    def _extract_playlist_id(url: str) -> Optional[str]:
-        """Extract YouTube playlist ID from URL"""
+    def _extract_playlist_id(self, url: str) -> Optional[str]:
         patterns = [
             r'list=([0-9A-Za-z_-]+)',
             r'music.youtube.com\/playlist\?list=([0-9A-Za-z_-]+)'
         ]
-        
         for pattern in patterns:
             match = re.search(pattern, url)
             if match:
@@ -81,13 +73,12 @@ class YouTubeService:
         return None
 
     async def get_video_info(self, url: str) -> Optional[Dict]:
-        """Get complete information for a YouTube video"""
         params = {
             **self.ydl_opts,
             'format': 'bestaudio/best',
             'url': url,
         }
-        
+
         try:
             result = await self._run_ydlp(params)
             if not result:
@@ -98,14 +89,8 @@ class YouTubeService:
             thumbnails = result.get('thumbnails', [])
             formats = result.get('formats', [])
 
-            # Get highest quality thumbnail
-            thumbnail = None
-            if thumbnails:
-                thumbnail = thumbnails[-1]['url']
-            elif result.get('thumbnail'):
-                thumbnail = result['thumbnail']
+            thumbnail = thumbnails[-1]['url'] if thumbnails else result.get('thumbnail')
 
-            # Find best audio format
             audio_url = None
             for fmt in formats:
                 if fmt.get('acodec') != 'none' and fmt.get('url'):
@@ -134,13 +119,12 @@ class YouTubeService:
             return None
 
     async def search(self, query: str, limit: int = 1) -> Optional[List[Dict]]:
-        """Search YouTube and return results"""
         params = {
             **self.ydl_opts,
             'default_search': 'ytsearch',
             'url': f"ytsearch{limit}:{query}",
         }
-        
+
         try:
             result = await self._run_ydlp(params)
             if not result or 'entries' not in result:
@@ -150,7 +134,7 @@ class YouTubeService:
             for entry in result['entries']:
                 if not entry:
                     continue
-                    
+
                 videos.append({
                     'id': entry.get('id'),
                     'title': entry.get('title', 'Unknown'),
@@ -159,14 +143,13 @@ class YouTubeService:
                     'formatted_duration': format_duration(entry.get('duration')) if entry.get('duration') else 'Live',
                     'thumbnail': entry.get('thumbnails', [{}])[-1].get('url') if entry.get('thumbnails') else None
                 })
-            
+
             return videos
         except Exception as e:
             logger.error(f"YouTube search error: {e}")
             return None
 
     async def get_playlist_info(self, url: str) -> Optional[Dict]:
-        """Get information about a YouTube playlist"""
         playlist_id = self._extract_playlist_id(url)
         if not playlist_id:
             return None
@@ -176,7 +159,7 @@ class YouTubeService:
             'extract_flat': True,
             'url': f"https://www.youtube.com/playlist?list={playlist_id}",
         }
-        
+
         try:
             result = await self._run_ydlp(params)
             if not result:
@@ -184,11 +167,11 @@ class YouTubeService:
 
             entries = result.get('entries', [])
             videos = []
-            
+
             for entry in entries:
                 if not entry:
                     continue
-                    
+
                 videos.append({
                     'id': entry.get('id'),
                     'title': entry.get('title', 'Unknown'),
@@ -212,13 +195,12 @@ class YouTubeService:
             return None
 
     async def get_best_audio_url(self, url: str) -> Optional[str]:
-        """Get the best audio stream URL for a YouTube video"""
         params = {
             **self.ydl_opts,
             'format': 'bestaudio/best',
             'url': url,
         }
-        
+
         try:
             result = await self._run_ydlp(params)
             if not result:
@@ -233,21 +215,18 @@ class YouTubeService:
             return None
 
     async def download_audio(self, url: str) -> Optional[Tuple[str, float]]:
-        """Download audio from YouTube and return file path and duration"""
         return await Downloader.download_media(url, is_video=False)
 
     async def download_video(self, url: str) -> Optional[Tuple[str, float]]:
-        """Download video from YouTube and return file path and duration"""
         return await Downloader.download_media(url, is_video=True)
 
     async def get_live_stream_url(self, url: str) -> Optional[str]:
-        """Get the live stream URL for a YouTube live video"""
         params = {
             **self.ydl_opts,
             'format': 'best',
             'url': url,
         }
-        
+
         try:
             result = await self._run_ydlp(params)
             if not result:
@@ -261,5 +240,5 @@ class YouTubeService:
             logger.error(f"Error getting live stream URL: {e}")
             return None
 
+# ✅ Create singleton instance for import use
 youtube_service = YouTubeService()
-
