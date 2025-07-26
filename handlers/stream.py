@@ -1,5 +1,5 @@
 
-from pytgcalls import PyTgCalls
+from pytgcalls import GroupCall
 from pytgcalls.types import GroupCallAction, GroupCallFileAction
 from services.player import Player
 from services.queue import QueueService
