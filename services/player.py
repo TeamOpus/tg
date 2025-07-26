@@ -1,15 +1,16 @@
 import asyncio
 import logging
-from typing import Optional, Dict, Union
 import os
+from typing import Optional, Dict
 
 from pytgcalls import PyTgCalls
 from pytgcalls.types.input_stream import AudioPiped
+
 from database.models import QueueItem
 from services.queue import QueueService
 from utils.downloader import Downloader
-from config.config import settings
 from utils.helpers import format_duration
+from config.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -41,13 +42,10 @@ class Player:
             stream = AudioPiped(item.file_path)
 
             self.current_streams[chat_id] = item
-
             await self.pytgcalls.join_group_call(chat_id, stream)
             logger.info(f"Started playing {item.title} in chat {chat_id}")
 
-            if item.file_path:
-                asyncio.create_task(self._cleanup_file(item.file_path))
-
+            asyncio.create_task(self._cleanup_file(item.file_path))
             return True
 
         except Exception as e:
@@ -59,9 +57,10 @@ class Player:
             if chat_id not in self.current_streams:
                 return False
             await self.pytgcalls.pause_stream(chat_id)
+            logger.info(f"Paused playback in chat {chat_id}")
             return True
         except Exception as e:
-            logger.error(f"Pause error in chat {chat_id}: {e}")
+            logger.error(f"Error pausing: {e}")
             return False
 
     async def resume(self, chat_id: int) -> bool:
@@ -69,9 +68,10 @@ class Player:
             if chat_id not in self.current_streams:
                 return False
             await self.pytgcalls.resume_stream(chat_id)
+            logger.info(f"Resumed playback in chat {chat_id}")
             return True
         except Exception as e:
-            logger.error(f"Resume error in chat {chat_id}: {e}")
+            logger.error(f"Error resuming: {e}")
             return False
 
     async def stop(self, chat_id: int) -> bool:
@@ -79,17 +79,15 @@ class Player:
             await self.pytgcalls.leave_group_call(chat_id)
             await QueueService.clear_queue(chat_id)
             await self._cleanup_chat(chat_id)
+            logger.info(f"Stopped playback in chat {chat_id}")
             return True
         except Exception as e:
-            logger.error(f"Stop error in chat {chat_id}: {e}")
+            logger.error(f"Error stopping: {e}")
             return False
 
     async def skip(self, chat_id: int, user_id: int) -> bool:
         try:
-            if chat_id not in self.skip_requests:
-                self.skip_requests[chat_id] = set()
-
-            self.skip_requests[chat_id].add(user_id)
+            self.skip_requests.setdefault(chat_id, set()).add(user_id)
             participants = await self.pytgcalls.get_participants(chat_id)
             required_votes = max(1, len(participants) // 2)
 
@@ -99,23 +97,25 @@ class Player:
 
             return False
         except Exception as e:
-            logger.error(f"Skip error in chat {chat_id}: {e}")
+            logger.error(f"Error skipping: {e}")
+            return False
+
+    async def set_volume(self, chat_id: int, volume: int) -> bool:
+        try:
+            volume = max(0, min(200, volume))
+            self.volume_levels[chat_id] = volume
+            logger.info(f"Volume set to {volume} for chat {chat_id}")
+            return True
+        except Exception as e:
+            logger.error(f"Error setting volume: {e}")
             return False
 
     async def set_loop_mode(self, chat_id: int, mode: str) -> bool:
         if mode not in ["none", "single", "queue"]:
             return False
         self.loop_modes[chat_id] = mode
+        logger.info(f"Loop mode set to {mode} for chat {chat_id}")
         return True
-
-    async def get_current_item(self, chat_id: int) -> Optional[QueueItem]:
-        return self.current_streams.get(chat_id)
-
-    async def get_queue_length(self, chat_id: int) -> int:
-        return await QueueService.get_queue_length(chat_id)
-
-    async def is_playing(self, chat_id: int) -> bool:
-        return chat_id in self.current_streams
 
     async def is_paused(self, chat_id: int) -> bool:
         try:
@@ -123,30 +123,14 @@ class Player:
         except:
             return False
 
-    async def _cleanup_chat(self, chat_id: int):
-        if chat_id in self.current_streams:
-            item = self.current_streams.pop(chat_id)
-            if item and item.file_path and os.path.exists(item.file_path):
-                try:
-                    os.remove(item.file_path)
-                except Exception as e:
-                    logger.error(f"Cleanup error: {e}")
-        self.skip_requests.pop(chat_id, None)
+    async def is_playing(self, chat_id: int) -> bool:
+        return chat_id in self.current_streams
 
-    async def _cleanup_file(self, file_path: str, delay: int = 300):
-        await asyncio.sleep(delay)
-        try:
-            if os.path.exists(file_path):
-                os.remove(file_path)
-        except Exception as e:
-            logger.error(f"Cleanup error: {e}")
+    async def get_current_item(self, chat_id: int) -> Optional[QueueItem]:
+        return self.current_streams.get(chat_id)
 
-    def _get_audio_parameters(self, chat_id: int) -> Dict:
-        volume = self.volume_levels.get(chat_id, 100) / 100
-        return {
-            "bitrate": getattr(settings, "AUDIO_BITRATE", 48000),
-            "volume": volume,
-        }
+    async def get_queue_length(self, chat_id: int) -> int:
+        return await QueueService.get_queue_length(chat_id)
 
     async def get_playback_status(self, chat_id: int) -> Dict:
         item = await self.get_current_item(chat_id)
@@ -157,5 +141,23 @@ class Player:
             "queue_length": await self.get_queue_length(chat_id),
             "volume": self.volume_levels.get(chat_id, 100),
             "loop_mode": self.loop_modes.get(chat_id, "none"),
-            "skip_votes": len(self.skip_requests.get(chat_id, set())),
-                }
+            "skip_votes": len(self.skip_requests.get(chat_id, set()))
+        }
+
+    async def _cleanup_chat(self, chat_id: int):
+        if chat_id in self.current_streams:
+            item = self.current_streams.pop(chat_id)
+            if item.file_path and os.path.exists(item.file_path):
+                try:
+                    os.remove(item.file_path)
+                except Exception as e:
+                    logger.error(f"File cleanup error: {e}")
+        self.skip_requests.pop(chat_id, None)
+
+    async def _cleanup_file(self, file_path: str, delay: int = 300):
+        await asyncio.sleep(delay)
+        try:
+            if os.path.exists(file_path):
+                os.remove(file_path)
+        except Exception as e:
+            logger.error(f"File cleanup error: {e}")
