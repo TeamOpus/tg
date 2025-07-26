@@ -129,7 +129,6 @@ async def main():
         # Cleanup resources
         logger.info("Shutting down...")
         if 'pytgcalls' in locals():
-            await pytgcalls.leave_call()
             await pytgcalls.stop()
         if 'app' in locals():
             await app.stop()
