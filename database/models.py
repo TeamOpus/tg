@@ -19,43 +19,31 @@ class PyObjectId(ObjectId):
     def __modify_schema__(cls, field_schema):
         field_schema.update(type="string")
 
+
 class QueueItem(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias="_id")
     chat_id: int
     user_id: int
     item_type: str  # 'youtube', 'spotify', 'local', 'm3u8'
-    file_path: Optional[str] = None
-    duration: Optional[float] = None
     title: str
-    url: Optional[str] = None
+    url: Optional[str] = None  # YouTube/M3U8 stream URL
+    file_path: Optional[str] = None  # Local cached file
     thumbnail: Optional[str] = None
-    played: bool = False
+    duration: Optional[float] = None  # Seconds
     is_live: bool = False
-    requested_at: datetime = Field(default_factory=datetime.utcnow)
+    played: bool = False
     position: Optional[int] = None
+    requested_at: datetime = Field(default_factory=datetime.utcnow)
 
     class Config:
         allow_population_by_field_name = True
         arbitrary_types_allowed = True
         json_encoders = {ObjectId: str}
-        schema_extra = {
-            "example": {
-                "chat_id": -100123456789,
-                "user_id": 123456789,
-                "item_type": "youtube",
-                "title": "Example Song",
-                "url": "https://youtube.com/watch?v=dQw4w9WgXcQ",
-                "duration": 213.0,
-                "thumbnail": "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
-                "played": False,
-                "is_live": False
-            }
-        }
 
     @property
     def formatted_duration(self) -> str:
-        """Return formatted duration as MM:SS or HH:MM:SS"""
         return format_duration(self.duration) if self.duration else "Live"
+
 
 class User(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias="_id")
@@ -72,6 +60,7 @@ class User(BaseModel):
         arbitrary_types_allowed = True
         json_encoders = {ObjectId: str}
 
+
 class Chat(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias="_id")
     chat_id: int
@@ -79,12 +68,13 @@ class Chat(BaseModel):
     type: str  # 'private', 'group', 'supergroup', 'channel'
     is_active: bool = True
     join_date: datetime = Field(default_factory=datetime.utcnow)
-    settings: dict = Field(default_factory=dict)  # Custom chat settings
+    settings: dict = Field(default_factory=dict)
 
     class Config:
         allow_population_by_field_name = True
         arbitrary_types_allowed = True
         json_encoders = {ObjectId: str}
+
 
 class PlayerState(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias="_id")
@@ -92,7 +82,7 @@ class PlayerState(BaseModel):
     is_playing: bool = False
     is_paused: bool = False
     current_item: Optional[PyObjectId] = None
-    volume: int = 100
+    volume: int = 100  # 0-200
     loop_mode: str = "none"  # 'none', 'single', 'queue'
     last_updated: datetime = Field(default_factory=datetime.utcnow)
 
@@ -100,6 +90,7 @@ class PlayerState(BaseModel):
         allow_population_by_field_name = True
         arbitrary_types_allowed = True
         json_encoders = {ObjectId: str}
+
 
 class Playlist(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias="_id")
@@ -115,5 +106,3 @@ class Playlist(BaseModel):
         allow_population_by_field_name = True
         arbitrary_types_allowed = True
         json_encoders = {ObjectId: str}
-
-        
