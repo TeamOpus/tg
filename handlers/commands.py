@@ -4,7 +4,7 @@ from pyrogram.enums import ParseMode
 from typing import Optional, Tuple, List
 from config.config import settings
 from database.models import QueueItem
-from services.youtube import YouTubeService
+from services.youtube import youtube_service  # or wherever the instance is defined
 from services.spotify import SpotifyService
 from services.queue import QueueService
 from services.player import Player
@@ -277,31 +277,34 @@ class CommandHandler:
             await msg.edit_text(f"✅ Added {added} tracks from Spotify playlist")
 
     async def _process_media_input(
-        self,
-        message: Message,
-        query: str,
-        chat_id: int,
-        user_id: int,
-        is_video: bool = False
-    ):
-        """Process YouTube URLs or search queries"""
-        if is_youtube_url(query):
-            # Direct YouTube URL
-            youtube_data = await YouTubeService.get_video_info(query)
-        else:
-            # YouTube search
-            youtube_data = await YouTubeService.search(query)
-
-        if not youtube_data:
+    self,
+    message: Message,
+    query: str,
+    chat_id: int,
+    user_id: int,
+    is_video: bool = False
+):
+    """Process YouTube URLs or search queries"""
+    if is_youtube_url(query):
+        # Direct YouTube URL
+        youtube_data = await youtube_service.get_video_info(query)
+    else:
+        # YouTube search (✅ use instance, not class)
+        results = await youtube_service.search(query)
+        if not results:
             return await message.reply("❌ No results found")
+        youtube_data = results[0]  # pick the first result
 
-        await self._add_to_queue(
-            chat_id=chat_id,
-            user_id=user_id,
-            youtube_data=youtube_data,
-            is_video=is_video,
-            message=message
-        )
+    if not youtube_data:
+        return await message.reply("❌ No results found")
+
+    await self._add_to_queue(
+        chat_id=chat_id,
+        user_id=user_id,
+        youtube_data=youtube_data,
+        is_video=is_video,
+        message=message
+    )
 
     async def _add_to_queue(
         self,
