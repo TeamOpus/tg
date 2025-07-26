@@ -12,7 +12,7 @@ class settings:
 
     # Database
     DATABASE_URL = os.getenv("DATABASE_URL")
-
+    DATABASE_NAME = "MusicBot"
     # Services
     YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
     SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
