@@ -9,7 +9,7 @@ import signal
 import sys
 from pyrogram import Client
 from pyrogram.enums import ParseMode
-from pytgcalls import GroupCall
+from pytgcalls import PyTgCalls
 
 from config.logging import setup_logging
 from config.config import settings
@@ -76,7 +76,7 @@ async def startup():
     )
     
     # Initialize PyTgCalls
-    pytgcalls = GroupCall(app)
+    pytgcalls = PyTgCalls(app)
     
     # Initialize services
     youtube_service = YouTubeService()
